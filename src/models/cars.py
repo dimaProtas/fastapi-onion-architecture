@@ -17,5 +17,5 @@ class Car(Base):
             id=self.id,
             brand=self.brand,
             model=self.model,
-            user_id=self.model
+            user_id=self.user_id
         )

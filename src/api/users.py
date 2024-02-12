@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from services.users import UsersService
-from api.dependencies import users_service
+from api.dependencies import UOWDep
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select, insert
@@ -38,12 +38,12 @@ router = APIRouter(
 #         })
 
 @router.get('/get_users')
-async def get_users(users_repo: Annotated[UsersService, Depends(users_service)]):
-    result = await users_repo.get_users()
+async def get_users(uow: UOWDep):
+    result = await UsersService().get_users(uow)
     return result
 
 
 @router.post('/created_user')
-async def created_user(user: UserSchemaAdd, users_repo: Annotated[UsersService, Depends(users_service)]):
-    user = await users_repo.add_user(user)
+async def created_user(user: UserSchemaAdd, uow: UOWDep):
+    user = await UsersService().add_user(uow, user)
     return user

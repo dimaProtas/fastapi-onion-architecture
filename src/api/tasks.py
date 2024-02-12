@@ -7,9 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db.db import get_async_session
 from models.tasks import Task
 from services.tasks import TasksService
-from api.dependencies import tasks_service
-from schemas.tasks import TaskSchemaAdd
-
+from api.dependencies import UOWDep
+from schemas.tasks import TaskSchemaAdd, TaskSchema
 
 router = APIRouter(
     prefix='/tasks',
@@ -38,13 +37,25 @@ router = APIRouter(
 
 
 @router.get('/get_tasks')
-async def get_tasks(
-    tasks_service: Annotated[TasksService, Depends(tasks_service)],
-):
-    tasks = await tasks_service.get_tasks()
-    return tasks
+async def get_tasks(uow: UOWDep):
+    tasks = await TasksService().get_tasks(uow)
+    return {"tasks": tasks}
 
-@router.post('add_task')
-async def add_task(task: TaskSchemaAdd, task_service: Annotated[TasksService, Depends(tasks_service)]):
-    task = await task_service.add_task(task)
-    return task
+
+@router.get('/history')
+async def history(uow: UOWDep):
+    history = await TasksService().get_histroy(uow)
+    return {"history": history}
+
+
+@router.post('/add_task')
+async def add_task(task: TaskSchemaAdd, uow: UOWDep):
+    task = await TasksService().add_task(uow, task)
+    return {"task": task}
+
+
+@router.patch('/edit_task/{task_id}')
+async def edit_task(task_id: int, task: TaskSchemaAdd, uow: UOWDep):
+    task_history = await TasksService().edit_task(task_id, task, uow)
+    return {"task_history": task_history}
+
